@@ -46,6 +46,7 @@ fn networkmanager_vpn_applicable_secrets(plugin: &str) -> Option<&[&'static str]
 enum NetworkManagerConnectionType<'a> {
     Vpn(&'a str),
     Wireguard,
+    Wireless,
 }
 
 impl<'a> NetworkManagerConnectionType<'a> {
@@ -55,6 +56,7 @@ impl<'a> NetworkManagerConnectionType<'a> {
                 networkmanager_vpn_applicable_secrets(vpntype)
             }
             NetworkManagerConnectionType::Wireguard => Some(&["private-key"]),
+            NetworkManagerConnectionType::Wireless => Some(&["psk"]),
         }
     }
 
@@ -62,6 +64,7 @@ impl<'a> NetworkManagerConnectionType<'a> {
         match self {
             NetworkManagerConnectionType::Vpn(_) => "vpn",
             NetworkManagerConnectionType::Wireguard => "wireguard",
+            NetworkManagerConnectionType::Wireless => "802-11-wireless-security",
         }
     }
 }
@@ -86,6 +89,7 @@ impl<'a> NMConnectionInfo<'a> for &NMConnection<'a> {
                 self.get("vpn")?.get("service-type")?.0.as_str()?,
             )),
             "wireguard" => Some(NetworkManagerConnectionType::Wireguard),
+            "802-11-wireless" => Some(NetworkManagerConnectionType::Wireless),
             _ => None,
         }
     }
